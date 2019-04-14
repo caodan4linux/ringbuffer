@@ -1,9 +1,10 @@
 export TOPDIR:=$(CURDIR)
 export OUTDIR:=$(TOPDIR)/out
-export INCDIR:=$(TOPDIR)
+export INCDIR:=$(TOPDIR)/src
+export BUILD_SCRIPTS_DIR:=$(TOPDIR)/build_scripts
 
-export BUILD_EXECUTABLE:=$(TOPDIR)/build_executable.mk
-export CLEAR_VARS:=$(TOPDIR)/clear_vars.mk
+export BUILD_EXECUTABLE:=$(BUILD_SCRIPTS_DIR)/build_executable.mk
+export CLEAR_VARS:=$(BUILD_SCRIPTS_DIR)/clear_vars.mk
 
 MAKE:=make --no-print-directory
 
@@ -20,3 +21,4 @@ clean:
 	do \
 		$(MAKE) -C `dirname $${mk}` clean; \
 	done
+	@$(RM) -rf $(OUTDIR)
