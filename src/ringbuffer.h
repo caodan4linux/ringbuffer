@@ -9,10 +9,9 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
-#include <string>
 #include <mutex>
-#include <chrono>
 #include <condition_variable>
+#include <chrono>
 
 //#define RINGBUF_DEBUG
 
@@ -148,9 +147,11 @@ int RingBuffer<T>::write(T *buf, uint32_t dataNum,
 	}
 
 	freeCount = freeCount_nolock();
-	totalCount = std::min(freeCount, dataNum); /* max write count */
+	/* min(freeCount, dataNum) */
+	totalCount = (freeCount <= dataNum ? freeCount : dataNum);
 
-	countsToWrite = std::min(totalCount, (m_dataNum - m_rear));
+	/* min(totalCount, (m_dataNum - m_rear)) */
+	countsToWrite = (totalCount <= (m_dataNum - m_rear) ? totalCount : (m_dataNum - m_rear));
 	memcpy(m_data + m_rear, buf, countsToWrite * sizeof(T));
 	countsWritten += countsToWrite;
 	m_rear = (m_rear + countsToWrite) % m_dataNum; /* update m_rear */
@@ -200,9 +201,11 @@ int RingBuffer<T>::read(T *buf, uint32_t dataNum,
 
 	/* read count must <= available dataCount */
 	availableCount = dataCount_nolock();
-	totalCount = std::min(availableCount, dataNum); /* max read count */
+	/* min(availableCount, dataNum), max read count */
+	totalCount = (availableCount <= dataNum ? availableCount : dataNum);
 
-	countsToRead = std::min(totalCount, (m_dataNum - m_front));
+	/* min(totalCount, (m_dataNum - m_front)) */
+	countsToRead = (totalCount <= (m_dataNum - m_front) ? totalCount : (m_dataNum - m_front));
 	memcpy(buf, m_data + m_front, countsToRead * sizeof(T));
 	countsRead += countsToRead;
 	m_front = (m_front + countsToRead) % m_dataNum;
